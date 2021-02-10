@@ -1,0 +1,7 @@
+version: '3.7'
+services:
+  node:
+    image: node:latest
+    environment:
+      - CERT=kopnik.org
+    entrypoint: "/bin/sh -c 'echo CERT=$CERT'"

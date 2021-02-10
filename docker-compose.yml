@@ -1,0 +1,141 @@
+version: '3.7'
+services:
+  node:
+    image: kopnikorg/kopnik-node:latest
+    environment:
+      # переопределяем параметры подключения для работы сервера в контейнере
+      DB_HOST: db
+      DB_PORT: 5432
+    volumes:
+      - ./kopnik-node-logs:/app/logs/
+      - ./.env:/app/.env
+    ports:
+      # внутри тоже порты разные, чтобы можно было и без контейнера одновременно  запустить сервера дев и тест
+      - ${APP_PORT}:${APP_PORT}
+    depends_on:
+      - db
+    command: [ "node", "--require", "ts-node/register", "-r", "tsconfig-paths/register", "-r", "dotenv/config", "src/index.ts"]
+
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DB}
+    volumes:
+      - ./db-data/${NODE_ENV}:/var/lib/postgresql/data
+      - ./db-dump/${NODE_ENV}:/var/lib/postgresql/dumps
+    ports:
+      - ${DB_PORT}:5432
+
+  client:
+    image: kopnikorg/kopnik-client:latest
+    volumes:
+      - client-dist:/app/dist
+    command: [ "sleep", "1000000" ]
+
+  nginx:
+    #    image: kopnikorg/kopnik-nginx:latest
+    image: nginx:latest
+    restart: unless-stopped
+
+    volumes:
+      #конфиг
+      - ./.docker/nginx/templates:/etc/nginx/templates
+      #клиент
+      - client-dist:/app/dist
+      #ключи
+      - ./certbot-etc-letsencrypt:/etc/letsencrypt
+      #челендж
+      - certbot-var-wwww-certbot:/var/www/certbot
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - NODE_SCHEMA=${NODE_SCHEMA}
+      - NODE_HOST=node
+      - NODE_PORT=${APP_PORT}
+      - NGINX_DOMAIN=${NGINX_DOMAIN}
+    depends_on:
+      - node
+      - kibana
+      - certbot
+  #    TODO: такой кастомный энтрипоинт игнорирует стандартынй обработчик шаблонов
+  #    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+
+  certbot:
+    build:
+      context: ./.docker/certbot
+    volumes:
+      # ключи
+      - ./certbot-etc-letsencrypt:/etc/letsencrypt
+      # челендж
+      - certbot-var-wwww-certbot:/var/www/certbot
+    environment:
+      - NGINX_DOMAIN:${NGINX_DOMAIN}
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+  elasticsearch:
+    build:
+      context: .docker/elastic/
+      args:
+        ELK_VERSION: $ELK_VERSION
+    container_name: elasticsearch
+    restart: always
+    environment:
+      - discovery.type=single-node
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - ES_JAVA_OPTS=-Xms256m -Xmx256m
+    #    ports:
+    #      - '9200:9200'
+    volumes:
+      - ./.docker/elastic/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./elastic-data:/usr/share/elasticsearch/data
+
+  logstash:
+    build:
+      context: .docker/logstash/
+      args:
+        ELK_VERSION: $ELK_VERSION
+    container_name: logstash
+    restart: always
+    environment:
+      - LOGSTASH_PWD=${ELASTIC_PASSWORD}
+      - LOGSTASH_USER=${ELASTIC_USERNAME}
+      - LS_JAVA_OPTS=-Xmx256m -Xms256m
+    volumes:
+      - ./kopnik-node-logs:/var/log/logs/
+      - ./.docker/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - ./.docker/logstash/pipeline:/usr/share/logstash/pipeline
+    #      - ./logstash/templates:/usr/share/logstash/templates/
+    #    links:
+    #      - 'elasticsearch'
+    #    ports:
+    #      - '9600:9600'
+    #      - '5044:5044'
+    depends_on:
+      - elasticsearch
+
+  kibana:
+    build:
+      context: .docker/kibana/
+      args:
+        ELK_VERSION: $ELK_VERSION
+    container_name: kibana
+    restart: always
+    environment:
+      - ELASTICSEARCH_USERNAME=${ELASTIC_USERNAME}
+      - ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD}
+    #    links:
+    #      - 'elasticsearch'
+    #    ports:
+    #      - '5601:5601'
+    volumes:
+      - ./.docker/kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml
+    depends_on:
+      - elasticsearch
+
+volumes:
+  client-dist:
+  certbot-var-wwww-certbot:

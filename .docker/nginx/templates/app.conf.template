@@ -1,0 +1,60 @@
+server {
+    listen 80;
+    server_name localhost ${NGINX_DOMAIN};
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+server {
+    listen 443 ssl;
+    server_name localhost ${NGINX_DOMAIN};
+
+    ssl_certificate /etc/letsencrypt/live/${NGINX_DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${NGINX_DOMAIN}/privkey.pem;
+
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    add_header Strict-Transport-Security "max-age=0";
+    add_header cache-control "max-age = 10";
+
+    location /api {
+      proxy_pass ${NODE_SCHEMA}://node:${NODE_PORT};
+      proxy_set_header  Host $http_host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-for $remote_addr;
+      proxy_redirect off;
+    }
+
+    location /auth/vkontakte {
+      proxy_pass ${NODE_SCHEMA}://node:${NODE_PORT};
+      proxy_set_header  Host $http_host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-for $remote_addr;
+      proxy_redirect off;
+    }
+
+    location ~ ^/kibana/.* {
+      proxy_pass http://kibana:5601;
+      rewrite ^/kibana/(.*) /$1 break;
+      proxy_set_header  Host $http_host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-for $remote_addr;
+    }
+
+     location /{
+       root /app/dist/;
+       try_files $uri $uri/ /index.html;
+     }
+
+    location ~* \.(html|js|jpg|png|css|gif)$ {
+      root /app/dist;
+      try_files $uri $uri/ /index.html?$args;
+      expires 30d;
+    }
+}

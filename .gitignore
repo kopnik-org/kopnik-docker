@@ -1,0 +1,17 @@
+.idea/
+.vscode/
+
+/tmp
+/temp
+/temp.*
+
+.env
+.env.*
+
+/node_modules
+
+/kopnik-node-logs
+/db-data
+/db-dump
+/certbot-etc-letsencrypt
+/elastic-data
