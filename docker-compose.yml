@@ -139,3 +139,4 @@ services:
 volumes:
   client-dist:
   certbot-var-wwww-certbot:
+  elastic-data:
