@@ -1,0 +1,26 @@
+name: "ci/cd"
+
+on:
+  push:
+    branches:
+      - main
+      - fix*
+      - feature*
+
+jobs:
+  deploy:
+    name: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: ssh
+        uses: alexey2baranov/github-action-ssh@release
+        with:
+          command: |
+            cd ~/kopnik-docker
+            git pull
+            docker-compose pull --quiet
+            docker-compose up --build -d
+            docker-compose exec -T node npm run typeorm:migration:run
+          host: kopnik.org
+          username: someuser
+          password: ${{ secrets.SSH_PASSWORD }}

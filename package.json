@@ -1,0 +1,49 @@
+{
+  "name": "kopnik-docker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "doc"
+  },
+  "scripts": {
+    "db": "docker-compose up db",
+    "start": "node --require ts-node/register -r tsconfig-paths/register -r dotenv/config src/index.ts",
+    "createUser:test": "node --require ts-node/register -r tsconfig-paths/register -r dotenv/config src/utils/createTestUser",
+    "createUser:svetoslav": "node --require ts-node/register -r tsconfig-paths/register -r dotenv/config src/utils/createSvetoslav",
+    "test": "./node_modules/.bin/jest  --runInBand --testTimeout=10000",
+    "typeorm": "node --require ts-node/register -r tsconfig-paths/register -r dotenv/config ./node_modules/typeorm/cli.js",
+    "typeorm:schema:log": "node --require ts-node/register -r tsconfig-paths/register -r dotenv/config ./node_modules/typeorm/cli.js schema:log",
+    "typeorm:schema:drop": "node --require ts-node/register -r tsconfig-paths/register -r dotenv/config ./node_modules/typeorm/cli.js schema:drop",
+    "typeorm:migration:create": "node --require ts-node/register -r tsconfig-paths/register -r dotenv/config ./node_modules/typeorm/cli.js migration:create",
+    "typeorm:migration:generate": "node --require ts-node/register -r tsconfig-paths/register -r dotenv/config ./node_modules/typeorm/cli.js migration:generate -n automigration",
+    "typeorm:migration:run": "node --require ts-node/register -r tsconfig-paths/register -r dotenv/config ./node_modules/typeorm/cli.js migration:run",
+    "env:test": "cp .env.test .env",
+    "env:development": "cp .env.development .env",
+    "env:production": "cp .env.production .env",
+    "docker:build": "docker build --pull --no-cache -t kopnikorg/kopnik-node:latest ./.docker/app/",
+    "docker:push": "docker push kopnikorg/kopnik-node:latest",
+    "docker:build:modules": "docker build --pull --no-cache -t kopnikorg/kopnik-node-modules:latest -f .docker/modules/Dockerfile .",
+    "docker:push:modules": "docker push kopnikorg/kopnik-node-modules:latest",
+    "docker-compose:up": "docker-compose up",
+    "docker-compose:up:latest": "docker-compose pull && docker-compose up --build",
+    "docker-compose:up:nginx:latest": "docker-compose up --build nginx",
+    "docker-compose:down:volume": "docker-compose down --volume",
+    "docker-compose:up:db": "docker-compose up db",
+    "docker-compose:up:client-test": "npm run env:test && docker-compose pull && docker-compose up node db",
+    "docker-compose:typeorm:schema:reset": "docker-compose exec node npm run typeorm:schema:drop && npm run typeorm:migration:run",
+
+    "ssh:db": "ssh -f -N -R 5435:localhost:5435 someuser@kopnik.org",
+    "ssh:elk": "ssh -f -N -L 5601:localhost:5601 someuser@kopnik.org"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kopnik-org/kopnik-docker.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kopnik-org/kopnik-docker/issues"
+  },
+  "homepage": "https://github.com/kopnik-org/kopnik-docker#readme"
+}
