@@ -27,7 +27,7 @@ server {
       proxy_pass ${NODE_SCHEMA}://node:${NODE_PORT};
       proxy_set_header  Host $http_host;
       proxy_set_header X-Real-IP $remote_addr;
-      proxy_set_header X-Forwarded-for $remote_addr;
+      proxy_set_header X-Forwarded-for $proxy_add_x_forwarded_for;
       proxy_redirect off;
     }
 
