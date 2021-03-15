@@ -24,9 +24,10 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_DB}
+      NODE_ENV: ${NODE_ENV}
     volumes:
       - ./db-data/${NODE_ENV}:/var/lib/postgresql/data
-      - ./db-dump/${NODE_ENV}:/var/lib/postgresql/dumps
+      - ./db-dumps:/var/lib/postgresql/dumps
     ports:
       - ${DB_PORT}:5432
 

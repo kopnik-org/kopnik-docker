@@ -13,5 +13,6 @@
 /kopnik-node-logs
 /db-data
 /db-dump
+/db-dumps
 /certbot-etc-letsencrypt
 /elastic-data
