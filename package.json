@@ -31,12 +31,13 @@
     "docker-compose:down:volume": "docker-compose down --volume",
     "docker-compose:up:db": "docker-compose up db",
     "docker-compose:up:client-test": "npm run env:test && docker-compose pull && docker-compose up node db",
+    "docker-compose:down": "docker-compose down",
     "docker-compose:typeorm:schema:reset": "docker-compose exec node npm run typeorm:schema:drop && npm run typeorm:migration:run",
 
     "ssh:db": "ssh -f -N -R 5435:localhost:5435 someuser@kopnik.org",
     "ssh:elk": "ssh -f -N -L 5601:localhost:5601 someuser@kopnik.org",
 
-    "db:dump": "docker-compose exec db pg_dump --host=db --port=5432 --username=db_user --format=tar --dbname=db_name --file=/var/lib/postgresql/dumps/$(date \"+%FT%H-%M-%S\").dump.tar && echo /var/lib/postgresql/dumps/$(date \"+%FT%H-%M-%S\")",
+    "db:dump": "docker-compose exec db pg_dump  --port=5432 --username=db_user --format=tar --dbname=db_name --file=/var/lib/postgresql/dumps/$(date \"+%FT%H-%M-%S\").dump.tar && echo /var/lib/postgresql/dumps/$(date \"+%FT%H-%M-%S\")",
     "db:restore": "docker-compose exec db pg_restore --host=db  --username=db_user --dbname=db_name --clean --create --exit-on-error /app/var/db_dumps/postgresql/2020-08-22.dump.tar"
   },
   "repository": {
