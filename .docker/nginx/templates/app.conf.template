@@ -57,4 +57,10 @@ server {
       try_files $uri $uri/ /index.html?$args;
       expires 30d;
     }
+    
+        error_page 404 403 500 502 503 504 /index.html;
+    location = /index.html {
+    root /app/dist/not-available/;
+    }
+    
 }

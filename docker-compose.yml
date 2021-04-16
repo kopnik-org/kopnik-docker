@@ -90,7 +90,7 @@ services:
     environment:
       - discovery.type=single-node
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
-      - ES_JAVA_OPTS=-Xms256m -Xmx256m
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
     #    ports:
     #      - '9200:9200'
     volumes:
@@ -107,7 +107,7 @@ services:
     environment:
       - LOGSTASH_PWD=${ELASTIC_PASSWORD}
       - LOGSTASH_USER=${ELASTIC_USERNAME}
-      - LS_JAVA_OPTS=-Xmx256m -Xms256m
+      - LS_JAVA_OPTS=-Xmx512m -Xms512m
     volumes:
       - ./kopnik-node-logs:/var/log/logs/
       - ./.docker/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
