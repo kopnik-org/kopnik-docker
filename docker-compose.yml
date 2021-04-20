@@ -51,6 +51,8 @@ services:
       - ./certbot-etc-letsencrypt:/etc/letsencrypt
       #челендж
       - certbot-var-wwww-certbot:/var/www/certbot
+      #error pages
+      - ./nginx:/error_pages
     ports:
       - "80:80"
       - "443:443"
