@@ -58,15 +58,17 @@ server {
       expires 30d;
     }
 
-    error 404 /error_pages/404.json;
-    error 403 /error_pages/403.json;
-    error 500 /error_pages/500.json;
-    error 502 /error_pages/502.json;
-    error 503 /error_pages/503.json;
-    error 504 /error_pages/504.json;
 
    # error_page 404 403 500 502 503 504 /index.html;
-   # location = /index.html {
-   # root /app/dist/not-available/;
-   # }
+    error_page 404 /404.json;
+    location = /404.json {
+        root /error_pages;
+    }
+
+    error_page 502 /502.json;
+    location = /502.json {
+        root /error_pages;
+    }
+
+
 }

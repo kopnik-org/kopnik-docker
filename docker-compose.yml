@@ -52,7 +52,7 @@ services:
       #челендж
       - certbot-var-wwww-certbot:/var/www/certbot
       #error pages
-      - ./nginx:/error_pages
+      - ./.docker/nginx/error_pages:/error_pages
     ports:
       - "80:80"
       - "443:443"
