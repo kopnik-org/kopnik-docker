@@ -12,21 +12,20 @@
     "createUser:test": "node --require ts-node/register -r tsconfig-paths/register -r dotenv/config src/utils/createTestUser",
     "createUser:svetoslav": "node --require ts-node/register -r tsconfig-paths/register -r dotenv/config src/utils/createSvetoslav",
     "test": "./node_modules/.bin/jest  --runInBand --testTimeout=10000",
-    "typeorm": "node --require ts-node/register -r tsconfig-paths/register -r dotenv/config ./node_modules/typeorm/cli.js",
-    "typeorm:schema:log": "node --require ts-node/register -r tsconfig-paths/register -r dotenv/config ./node_modules/typeorm/cli.js schema:log",
-    "typeorm:schema:drop": "node --require ts-node/register -r tsconfig-paths/register -r dotenv/config ./node_modules/typeorm/cli.js schema:drop",
-    "typeorm:migration:create": "node --require ts-node/register -r tsconfig-paths/register -r dotenv/config ./node_modules/typeorm/cli.js migration:create",
-    "typeorm:migration:generate": "node --require ts-node/register -r tsconfig-paths/register -r dotenv/config ./node_modules/typeorm/cli.js migration:generate -n automigration",
-    "typeorm:migration:run": "node --require ts-node/register -r tsconfig-paths/register -r dotenv/config ./node_modules/typeorm/cli.js migration:run",
+    "typeorm": "docker-compose exec -T node node --require ts-node/register -r tsconfig-paths/register -r dotenv/config ./node_modules/typeorm/cli.js",
+    "typeorm:schema:log": "docker-compose exec -T node node --require ts-node/register -r tsconfig-paths/register -r dotenv/config ./node_modules/typeorm/cli.js schema:log",
+    "typeorm:schema:drop": "docker-compose exec -T node node --require ts-node/register -r tsconfig-paths/register -r dotenv/config ./node_modules/typeorm/cli.js schema:drop",
+    "typeorm:migration:create": "docker-compose exec -T node node --require ts-node/register -r tsconfig-paths/register -r dotenv/config ./node_modules/typeorm/cli.js migration:create",
+    "typeorm:migration:generate": "docker-compose exec -T node node --require ts-node/register -r tsconfig-paths/register -r dotenv/config ./node_modules/typeorm/cli.js migration:generate -n automigration",
+    "typeorm:migration:run": "docker-compose exec -T node node --require ts-node/register -r tsconfig-paths/register -r dotenv/config ./node_modules/typeorm/cli.js migration:run",
     "env:test": "cp .env.test .env",
     "env:development": "cp .env.development .env",
     "env:production": "cp .env.production .env",
-    "docker:build": "docker build --pull --no-cache -t kopnikorg/kopnik-node:latest ./.docker/app/",
-    "docker:push": "docker push kopnikorg/kopnik-node:latest",
+
     "docker:build:modules": "docker build --pull --no-cache -t kopnikorg/kopnik-node-modules:latest -f .docker/modules/Dockerfile .",
     "docker:push:modules": "docker push kopnikorg/kopnik-node-modules:latest",
     "docker-compose:down": "docker-compose down",
-    "docker-compose:up": "docker-compose up --build",
+    "docker-compose:up": "docker-compose up --build -d",
     "docker-compose:up:latest": "docker-compose pull && docker-compose up --build",
     "docker-compose:up:nginx:latest": "docker-compose up --build nginx",
     "docker-compose:down:volume": "docker-compose down --volume",
@@ -34,11 +33,23 @@
     "docker-compose:up:client-test": "npm run env:test && docker-compose pull && docker-compose up node db",
     "docker-compose:typeorm:schema:reset": "docker-compose exec node npm run typeorm:schema:drop && npm run typeorm:migration:run",
 
+
+    "docker:build": "docker build --pull --no-cache -t kopnikorg/kopnik-node:latest  -f .docker/app/Dockerfile .",
+    "docker:push": "docker push kopnikorg/kopnik-node:latest",
+
     "ssh:db": "ssh -f -N -R 5435:localhost:5435 someuser@kopnik.org",
     "ssh:elk": "ssh -f -N -L 5601:localhost:5601 someuser@kopnik.org",
 
     "db:dump": "docker-compose exec db pg_dump  --port=5432 --username=db_user --format=tar --dbname=db_name --file=/var/lib/postgresql/dumps/$(date \"+%FT%H-%M-%S\").dump.tar && echo /var/lib/postgresql/dumps/$(date \"+%FT%H-%M-%S\")",
-    "db:restore": "docker-compose exec db pg_restore --host=db  --username=db_user --dbname=db_name --clean --create --exit-on-error /app/var/db_dumps/postgresql/2020-08-22.dump.tar"
+    "db:restore:example": "docker-compose exec db pg_restore --host=db  --username=db_user --dbname=db_name --clean --create --exit-on-error /app/var/db_dumps/postgresql/2020-08-22.dump.tar",
+    "db:restore": "run(){ docker-compose exec db pg_restore --host=db  --username=db_user --dbname=postgres --clean --create --exit-on-error /var/lib/postgresql/dumps/$1; }; run",
+
+
+    "docker:network:create": "docker network create cluster",
+    "docker:run:db": "docker run --rm --name=db --network cluster -e POSTGRES_USER=db_user -e POSTGRES_PASSWORD=db_password -e POSTGRES_DB=db_name -p 5435:5432 -v ${PWD}/db-data/staging:/var/lib/postgresql/data postgres:latest",
+    "docker:run:node": "docker run --rm --name=node --network cluster -p 8085:8085 -v ${PWD}/.env:/app/.env kopnikorg/kopnik-node:latest node --require ts-node/register -r tsconfig-paths/register -r dotenv/config src/index.ts",
+
+    "docker:run:cmd": "docker run --rm  --network cluster kopnikorg/kopnik-node:latest ping db"
   },
   "repository": {
     "type": "git",
