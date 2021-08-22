@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="kopnik_development_db_node_kibana_nginx" type="docker-deploy" factoryName="docker-compose.yml" server-name="Docker">
+  <configuration default="false" name="kopnik_development_db_node" type="docker-deploy" factoryName="docker-compose.yml" server-name="Docker">
     <deployment type="docker-compose.yml">
       <settings>
         <option name="removeVolumesOnComposeDown" value="true" />
@@ -8,8 +8,6 @@
           <list>
             <option value="db" />
             <option value="node" />
-            <option value="nginx" />
-            <option value="kibana" />
           </list>
         </option>
         <option name="sourceFilePath" value="docker-compose.yml" />
