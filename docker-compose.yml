@@ -35,8 +35,6 @@ services:
     image: kopnikorg/kopnik-client:latest
     volumes:
       - client-dist:/app/dist
-      # очень большие файлы не сохраняются в репозиторий
-      - ./kopnik-client-img-about:/app/dist/img/about:ro
     command: [ "sleep", "1000000" ]
 
   nginx:
@@ -49,6 +47,8 @@ services:
       - ./.docker/nginx/templates:/etc/nginx/templates
       #клиент
       - client-dist:/app/dist
+      # очень большие файлы не сохраняются в репозиторий
+      - ./kopnik-client-img-about:/app/dist/img/about:ro
       #ключи
       - ./certbot-etc-letsencrypt:/etc/letsencrypt
       #челендж
